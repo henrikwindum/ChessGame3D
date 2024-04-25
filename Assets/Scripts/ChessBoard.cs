@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class ChessBoard : MonoBehaviour
-{
+{ 
     private const int height = 8;
     private const int width = 8;
 
@@ -16,27 +17,18 @@ public class ChessBoard : MonoBehaviour
     public Material pieceMaterialWhite;
     public Material pieceMaterialBlack;
 
-    [Header("White Pieces")]
-    public GameObject whitePawnPrefab;
-    public GameObject whiteRookPrefab;
-    public GameObject whiteKnightPrefab;
-    public GameObject whiteBishopPrefab;
-    public GameObject whiteQueenPrefab;
-    public GameObject whiteKingPrefab;
-
-    [Header("Black Pieces")]
-    public GameObject blackPawnPrefab;
-    public GameObject blackRookPrefab;
-    public GameObject blackKnightPrefab;
-    public GameObject blackBishopPrefab;
-    public GameObject blackQueenPrefab;
-    public GameObject blackKingPrefab;
+    [Header("Piece Prefabs")]
+    public GameObject[] piecePrefabs; // 0-5 for white, 6-11 for black (Pawn, Rook, Knight, Bishop, Queen, King)
 
     public ChessBoardCell[,] cells = new ChessBoardCell[height, width];
+
+    private Dictionary<PlayerColor, HashSet<ChessPiece>> chessPiecesByColor = new Dictionary<PlayerColor, HashSet<ChessPiece>>();
 
     // Start is called before the first frame update
     void Start()
     {
+        chessPiecesByColor[PlayerColor.White] = new HashSet<ChessPiece> ();
+        chessPiecesByColor[PlayerColor.Black] = new HashSet<ChessPiece> ();
         CreateBoard();
     }
 
@@ -47,76 +39,50 @@ public class ChessBoard : MonoBehaviour
             for (int y = 0; y < width; y++)
             {
                 GameObject newCell = Instantiate(cellPrefab, new Vector3Int(x, 0, y), Quaternion.identity, transform);
-
-                bool isBlackCell = (x + y) % 2 == 0;
-
                 MeshRenderer cellRenderer = newCell.GetComponent<MeshRenderer>();
-
+                bool isBlackCell = (x + y) % 2 == 0;
                 cellRenderer.material = isBlackCell ? boardMaterialBlack : boardMaterialWhite;
 
-                cells[x, y] = new ChessBoardCell
-                {
-                    x = x,  
-                    y = y,
-                    cellPrefab = newCell
-                };
-
-                InstantiatePiece(x, y);
+                cells[x, y] = newCell.GetComponent<ChessBoardCell>();
             }
         }
+        SetupPieces();
     }
 
-    private void InstantiatePiece(int x, int y)
+    private void SetupPieces()
     {
-        if (y == 1 || y == 6)
+        for (int x = 0; x < width; x++)
         {
-            GameObject piecePrefab = y == 1 ? whitePawnPrefab : blackPawnPrefab;
-            InstantiateAndPlacePiece(piecePrefab, x, y);
+            PlacePiece(PieceType.Pawn, PlayerColor.White, x, 1);
+            PlacePiece(PieceType.Pawn, PlayerColor.Black, x, 6);
         }
-        else if (y == 0 || y == 7)
-        {
-            GameObject piecePrefab = null;
-            if (x == 0 || x == 7)
-            {
-                piecePrefab = y == 0 ? whiteRookPrefab : blackRookPrefab;
-            }
-            else if (x == 1 || x == 6)
-            {
-                piecePrefab = y == 0 ? whiteKnightPrefab : blackKnightPrefab;
-            }
-            else if (x == 2 || x == 5)
-            {
-                piecePrefab = y == 0 ? whiteBishopPrefab : blackBishopPrefab;
-            }
-            else if (x == 3)
-            {
-                piecePrefab = y == 0 ? whiteQueenPrefab : blackQueenPrefab;
-            }
-            else if (x == 4)
-            {
-                piecePrefab = y == 0 ? whiteKingPrefab : blackKingPrefab;
-            }
 
-            InstantiateAndPlacePiece(piecePrefab, x, y);
+        PieceType[] lineup = { 
+            PieceType.Rook, PieceType.Knight, PieceType.Bishop, PieceType.Queen, 
+            PieceType.King, PieceType.Bishop, PieceType.Knight, PieceType.Rook };
+        int[] piecePositions = { 0, 7 };
+        foreach( var y in piecePositions )
+        {
+            PlayerColor color = y == 0 ? PlayerColor.White : PlayerColor.Black;
+            for ( int x = 0; x < width; x++) 
+            {
+                PlacePiece(lineup[x], color, x, y);
+            }
         }
     }
 
-    private void InstantiateAndPlacePiece(GameObject prefab, int x, int y)
+    private void PlacePiece(PieceType type, PlayerColor color, int x, int y)
     {
-        if (prefab != null)
-        {
-            GameObject newPiece = Instantiate(prefab, new Vector3((float)x, 0.01f, (float)y), Quaternion.identity, cells[x, y].cellPrefab.transform);
-            newPiece.transform.localScale = new Vector3(1, 100, 1);
-            newPiece.transform.SetParent(cells[x, y].cellPrefab.transform, false);
-            cells[x, y].chessPiece = newPiece.GetComponent<ChessPiece>();
-        }
+        int index = (int)type + (color == PlayerColor.White ? 0 : 6); // Calculate prefab index based on type and color 
+        GameObject pieceObject = Instantiate(piecePrefabs[index], new Vector3(x, 0.01f, y), Quaternion.identity, cells[x, y].transform);
+        pieceObject.transform.localScale = new Vector3(1, 100, 1);
+        ChessPiece piece = pieceObject.GetComponent<ChessPiece>();
+        chessPiecesByColor[color].Add(piece);
+        cells[x, y].chessPiece = piece;
     }
+}
 
-    public class ChessBoardCell
-    {
-        public int x;
-        public int y;
-        public GameObject cellPrefab;
-        public ChessPiece chessPiece;
-    }
+public enum PlayerColor
+{
+    Black, White
 }

@@ -3,9 +3,18 @@ using UnityEngine.EventSystems;
 
 public class ChessPiece : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    public Color color;
+    public PieceType Type {  get; private set; }
+    public PlayerColor Color { get; private set; }
+    public GameObject GameObject { get; private set; }
 
     public Transform parentAfterDrag;
+
+    public ChessPiece(PieceType type, PlayerColor color, GameObject gameObject)
+    {
+        Type = type;
+        Color = color;
+        GameObject = gameObject;
+    }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
@@ -23,3 +32,9 @@ public class ChessPiece : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         transform.SetParent(parentAfterDrag);
     }
 }
+
+public enum PieceType
+{
+    Pawn, Rook, Knight, Bishop, Queen, King
+}
+

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Rook : ChessPiece
 {
-    public GameObject rookPrefab;
+    public Rook(PieceType type, PlayerColor color, GameObject gameObject) : base(type, color, gameObject) {}
 
     // Add logic for rook here
 }
