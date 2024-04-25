@@ -7,6 +7,10 @@ public class ChessPiece : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     public PlayerColor Color { get; private set; }
 
     public Transform parentAfterDrag;
+    
+    const float fixedY = 0.01f;
+
+    float cameraDistance;
 
     public void InitializeChessPiece(PieceType type, PlayerColor color)
     {
@@ -18,16 +22,25 @@ public class ChessPiece : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         parentAfterDrag = transform.parent;
         transform.SetParent(transform.root);
+
+        cameraDistance = Camera.main.transform.position.y - fixedY;
+
+        GetComponent<CanvasGroup>().blocksRaycasts = false;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        transform.position = Input.mousePosition;
+        Vector3 screenPoint = new Vector3(Input.mousePosition.x, Input.mousePosition.y, cameraDistance);
+        Vector3 worldPoint = Camera.main.ScreenToWorldPoint(screenPoint);
+
+        transform.position = new Vector3(worldPoint.x, fixedY, worldPoint.z);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
         transform.SetParent(parentAfterDrag);
+        transform.localPosition = Vector3.zero;
+        GetComponent<CanvasGroup>().blocksRaycasts = true;
     }
 }
 

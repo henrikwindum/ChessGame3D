@@ -6,7 +6,14 @@ public class ChessBoardCell : MonoBehaviour, IDropHandler
     public ChessPiece chessPiece;
     public void OnDrop(PointerEventData eventData)
     {
-        ChessPiece chessPiece = eventData.pointerDrag.GetComponent<ChessPiece>();
-        chessPiece.parentAfterDrag = transform;
+        if (eventData.pointerDrag != null)
+        {
+            ChessPiece draggedChessPiece = eventData.pointerDrag.GetComponent<ChessPiece>();
+            if (draggedChessPiece != null && chessPiece == null)
+            {
+                draggedChessPiece.parentAfterDrag = transform;
+                chessPiece = draggedChessPiece;
+            }
+        }
     }
 }
