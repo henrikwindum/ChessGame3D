@@ -77,6 +77,7 @@ public class ChessBoard : MonoBehaviour
         GameObject pieceObject = Instantiate(piecePrefabs[index], new Vector3(x, 0.01f, y), Quaternion.identity, cells[x, y].transform);
         pieceObject.transform.localScale = new Vector3(1, 100, 1);
         ChessPiece piece = pieceObject.GetComponent<ChessPiece>();
+        piece.InitializeChessPiece(type, color);
         chessPiecesByColor[color].Add(piece);
         cells[x, y].chessPiece = piece;
     }

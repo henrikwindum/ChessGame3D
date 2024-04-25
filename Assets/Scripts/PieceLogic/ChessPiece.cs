@@ -5,15 +5,13 @@ public class ChessPiece : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 {
     public PieceType Type {  get; private set; }
     public PlayerColor Color { get; private set; }
-    public GameObject GameObject { get; private set; }
 
     public Transform parentAfterDrag;
 
-    public ChessPiece(PieceType type, PlayerColor color, GameObject gameObject)
+    public void InitializeChessPiece(PieceType type, PlayerColor color)
     {
         Type = type;
         Color = color;
-        GameObject = gameObject;
     }
 
     public void OnBeginDrag(PointerEventData eventData)
